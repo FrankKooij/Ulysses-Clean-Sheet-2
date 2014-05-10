@@ -9,6 +9,10 @@ Does not change your original sheet, just puts a cleaned copy in the Inbox (iClo
 Drag sheet from Ulysses III's sheet list to Ulysses-Clean-Sheet folder on Desktop.   
 Python script fixes blank lines and spaces, and deliver **Clean sheet back in Inbox.**
 
+Use Hazel for smooth laundry service :)
+
+Script setup in Hazel? [Click here](http://t.co/EgrOwChykB) and [here](http://t.co/4dAORKd8S6)
+
 ### Need RegEx Find & Replace?
 Add two lines at top of sheet in UL codeblocks:  
 '' find: regex-pattern  
@@ -19,9 +23,3 @@ Then drag sheet as above.
 Attributes (in link, image, and video) and Attachments are left untouched
 
 See: [Python 3.3 RegEx](https://docs.python.org/3.3/howto/regex.html)
-
-
-
-Use Hazel for smooth laundry service :)
-
-Script setup in Hazel? [Click here](http://t.co/EgrOwChykB) and [here](http://t.co/4dAORKd8S6)
