@@ -7,7 +7,8 @@ Sometimes, after copying from web-pages and pasting with Ulysses excellent "Past
 
 Does not change your original sheet, just puts a cleaned copy in the Inbox (iCloud)
 
-Drag sheet to folder on Desktop, python script fixes blank lines and spaces, and deliver **Clean sheet back in Inbox.**
+Drag sheet from Ulysses III's sheet list to Ulysses-Clean-Sheet folder on Desktop.   
+Python script fixes blank lines and spaces, and deliver **Clean sheet back in Inbox.**
 
 Use Hazel for smooth laundry service :)
 
