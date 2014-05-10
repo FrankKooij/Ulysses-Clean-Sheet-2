@@ -9,7 +9,7 @@ Does not change your original sheet, just puts a cleaned copy in the Inbox (iClo
 Drag sheet from Ulysses III's sheet list to Ulysses-Clean-Sheet folder on Desktop.   
 Python script fixes blank lines and spaces, and deliver **Clean sheet back in Inbox.**
 
-### Need RegEx find & replace?
+### Need RegEx Find & Replace?
 Add two lines at top of sheet in UL codeblocks:  
 '' find: regex-pattern  
 '' repl: replace-pattern  
