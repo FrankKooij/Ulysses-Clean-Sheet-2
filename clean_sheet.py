@@ -1,13 +1,20 @@
 # python3.3
 # clean_sheet.py
-# 2014-05-10 at 08:56
+# 2014-05-10 at 18:52
 
 # MIT (c) 2014 RoyRogers56
 
-# Clean blank lines in Ulysses sheets:
+## Clean blank lines in Ulysses sheets:
 # One blank line after each paragraph, except lists, quotes and code;
 # Strips blank line after heading 3-6
 # Strips double spaces.
+
+## RegEx find & replace:
+# Add two lines at top of sheet in UL codeblock:
+# '' find: regex-pattern
+# '' repl: repl-pattern
+# See: https://docs.python.org/3.3/howto/regex.html
+# Attributes (in link, image, and video) and Attachments are left untouched
 
 # Use Hazel to trigger script, for smooth laundry service :)
 
@@ -34,6 +41,59 @@ def write_file(filename, file_content):
     f.close()
 
 
+use_regex = False
+re_from = ""
+re_to = ""
+
+
+def regex_parse_par(p):
+    global use_regex
+
+    try:
+        for elem in p.iter():
+            if elem.tag == "p":
+                if elem.text:
+                    elem.text = re.sub(re_from, re_to, elem.text)
+            elif elem.tag == "tag":
+                continue
+            elif elem.tag in ("tags", "attribute"):
+                if elem.tail:
+                    elem.tail = re.sub(re_from, re_to, elem.tail)
+            else:
+                if elem.text:
+                    elem.text = re.sub(re_from, re_to, elem.text)
+                if elem.tail:
+                    elem.tail = re.sub(re_from, re_to, elem.tail)
+        return ET.tostring(p, "unicode", "xml")
+    except Exception as e:
+        use_regex = False
+        print(e)
+        msg = '<p><tags><tag kind="comment">%% </tag></tags>Error in RegEx: '\
+              + '<element kind="code" startTag="`">"' + re_from + '", "' + re_to + '" : ' + str(e)\
+              + '</element></p>\n'
+        return msg + ET.tostring(p, "unicode", "xml")
+
+
+def check_for_regex(par):
+    global use_regex
+    global re_from
+    global re_to
+
+    match = re.search(r'<p><tags><tag kind="codeblock">\'\' </tag></tags>find: (.+)</p>', par)
+    if match:
+        re_from = match.group(1)
+        return True
+    match = re.search(r'<p><tags><tag kind="codeblock">\'\' </tag></tags>repl: (.+)</p>', par)
+    if match:
+        re_to = match.group(1)
+        use_regex = True
+        print("RegEx from:", re_from)
+        print("RegEx to  :", re_to)
+        return True
+
+    return False
+
+
 xml_file = input_file + "/Content.xml"
 xml_doc = ET.parse(xml_file)
 
@@ -42,8 +102,13 @@ xml_body = xml_doc.find("string")
 xml_txt = '<string xml:space="preserve">'
 add_blank = False
 next_blank = False
+p_num = 0
+
 for p in xml_body.iterfind("p"):
     par = ET.tostring(p, "unicode", "xml")
+    p_num += 1
+    if p_num < 3 and check_for_regex(par):
+        continue
 
     if add_blank:
         xml_txt += "<p />\n"
@@ -81,7 +146,10 @@ for p in xml_body.iterfind("p"):
             next_blank = False
         add_blank = True
 
-    xml_txt += par
+    if use_regex:
+        xml_txt += regex_parse_par(p)
+    else:
+        xml_txt += par
 
 xml_txt = xml_txt + '</string>\n'
 
@@ -98,6 +166,5 @@ for p in ET.XML(xml_txt).iterfind("p"):
 xml_doc.write("debug.xml")
 
 xml_doc.write(xml_file)
-print("Ulysses file processed:", input_file)
-
 subprocess.call(['open', input_file])
+print("Ulysses file processed:", input_file)
