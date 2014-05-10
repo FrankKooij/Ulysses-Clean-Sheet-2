@@ -1,12 +1,9 @@
 Ulysses-Clean-Sheet
 ===================
 
-Ulysses III: *Dirty sheets? *
+Ulysses III: *Dirty sheets?*
 
-Drag sheet to folder, python script fixes blank lines and spaces. 
+Drag sheet to folder on Desktop, python script fixes blank lines and spaces,  
+and deliver **Clean sheet back in Inbox.**
 
-**Clean sheet back in Inbox. **
-
-Use Hazel for smooth laundry service :)
-
-[Hazel Setup](http://t.co/e4fkUvaYt9)
+Use Hazel for smooth laundry service :) [Script setup in Hazel? Click here](http://t.co/e4fkUvaYt9)
