@@ -15,8 +15,8 @@ Script setup in Hazel? [Click here](http://t.co/EgrOwChykB) and [here](http://t.
 
 ### Need RegEx Find & Replace?
 Add two lines at top of sheet in UL codeblocks:  
-'' find:regex-pattern  
-'' repl:replace-pattern  
+**'' find:**_regex-pattern_  
+**'' repl:**_replace-pattern_  
 
 Then drag sheet as above.
 
