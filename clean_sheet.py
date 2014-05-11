@@ -1,6 +1,9 @@
 # python3.3
 # clean_sheet.py
-# 2014-05-10 at 18:52
+
+# Version 1.0.0 2014-05-11 at 19:04
+# Changes: 2014-05-11 More pure xml ET parsing.
+# Finally discovered the element.tail attribute :)
 
 # MIT (c) 2014 RoyRogers56
 
@@ -11,8 +14,8 @@
 
 ## RegEx find & replace:
 # Add two lines at top of sheet in UL codeblock:
-# '' find: regex-pattern
-# '' repl: repl-pattern
+# '' find:regex-pattern
+# '' repl:repl-pattern
 # See: https://docs.python.org/3.3/howto/regex.html
 # Attributes (in link, image, and video) and Attachments are left untouched
 
@@ -41,9 +44,25 @@ def write_file(filename, file_content):
     f.close()
 
 
+# Globals:
 use_regex = False
 re_from = ""
 re_to = ""
+
+
+def replace(elem, text=False, tail=False):
+    if text and elem.text:
+        # elem.text: is element's inner text
+        if use_regex:
+            elem.text = re.sub(re_from, re_to, elem.text)
+        # Clean double spaces:
+        elem.text = re.sub(r" +", r" ", elem.text)
+    if tail and elem.tail:
+        # elem.tail: is text nodes following an element's closing tag.
+        if use_regex:
+            elem.tail = re.sub(re_from, re_to, elem.tail)
+        # Clean double spaces:
+        elem.tail = re.sub(r" +", r" ", elem.tail)
 
 
 def regex_parse_par(p):
@@ -51,40 +70,39 @@ def regex_parse_par(p):
 
     try:
         for elem in p.iter():
+        # Iterates trough all elements and subelements of paragraph tree
+        # No need for recursive calls :)
             if elem.tag == "p":
-                if elem.text:
-                    elem.text = re.sub(re_from, re_to, elem.text)
+                replace(elem, text=True)
             elif elem.tag == "tag":
                 continue
             elif elem.tag in ("tags", "attribute"):
-                if elem.tail:
-                    elem.tail = re.sub(re_from, re_to, elem.tail)
+                replace(elem, tail=True)
             else:
-                if elem.text:
-                    elem.text = re.sub(re_from, re_to, elem.text)
-                if elem.tail:
-                    elem.tail = re.sub(re_from, re_to, elem.tail)
-        return ET.tostring(p, "unicode", "xml")
+                replace(elem, text=True, tail=True)
+        return None
     except Exception as e:
         use_regex = False
         print(e)
         msg = '<p><tags><tag kind="comment">%% </tag></tags>Error in RegEx: '\
               + '<element kind="code" startTag="`">"' + re_from + '", "' + re_to + '" : ' + str(e)\
               + '</element></p>\n'
-        return msg + ET.tostring(p, "unicode", "xml")
+        # return msg + ET.tostring(p, "unicode", "xml")
+        return ET.XML(msg)
 
 
-def check_for_regex(par):
+def check_for_regex(p):
     global use_regex
     global re_from
     global re_to
 
-    match = re.search(r'<p><tags><tag kind="codeblock">\'\' </tag></tags>find: (.+)</p>', par)
+    par = ET.tostring(p, "unicode", "xml")
+    match = re.search(r'<p><tags><tag kind="codeblock">\'\' ?</tag></tags> *find:(.+)</p>', par)
     if match:
         re_from = match.group(1)
         return True
-    match = re.search(r'<p><tags><tag kind="codeblock">\'\' </tag></tags>repl: (.+)</p>', par)
-    if match:
+    match = re.search(r'<p><tags><tag kind="codeblock">\'\' ?</tag></tags> *repl:(.+)</p>', par)
+    if re_from != "" and match:
         re_to = match.group(1)
         use_regex = True
         print("RegEx from:", re_from)
@@ -94,74 +112,79 @@ def check_for_regex(par):
     return False
 
 
+#*** Main program:
+
 xml_file = input_file + "/Content.xml"
 xml_doc = ET.parse(xml_file)
 
-xml_body = xml_doc.find("string")
+xml_new_body = ET.Element("string")
+xml_new_body.set("xml:space", "preserve")
 
-xml_txt = '<string xml:space="preserve">'
+p_blank = ET.Element("p")
+
 add_blank = False
 next_blank = False
 p_num = 0
 
+xml_body = xml_doc.find("string")
 for p in xml_body.iterfind("p"):
-    par = ET.tostring(p, "unicode", "xml")
+    # par = ET.tostring(p, "unicode", "xml")
     p_num += 1
-    if p_num < 3 and check_for_regex(par):
+    if p_num <= 2 and check_for_regex(p):
+        # Reads first two lines and chack for regex find: and repl:
+        # then skips these lines if found
         continue
 
     if add_blank:
-        xml_txt += "<p />\n"
+        xml_new_body.append(p_blank)
         add_blank = False
 
-    if par.strip() == "<p />":
+    if not (p or p.text):
+        # Blank lines
         if add_blank:
-            xml_txt += "<p />\n"
+            xml_new_body.append(p_blank)
         add_blank = False
         continue
 
-    if '<tag kind="orderedList">' in par \
-            or '<tag kind="unorderedList">' in par \
-            or '<tag kind="codeblock">' in par \
-            or '<tag kind="blockquote">' in par \
-            or '<tag kind="comment">' in par:
+    kind = None
+    tag = p.find(".//tag")
+    if tag is not None:
+        kind = tag.get("kind")
+
+    if kind in ("unorderedList", "codeblock", "blockquote", "comment"):
         # No blank line after list par and blockquote, except last.
         add_blank = False
         next_blank = True
-    elif '<tag kind="heading1' in par or '<tag kind="heading2' in par:
+    elif kind in ("heading1", "heading2"):
         # Blank line after heading1-2
         if next_blank:
-            xml_txt += "<p />\n"
+            xml_new_body.append(p_blank)
             next_blank = False
         add_blank = True
-    elif '<tag kind="heading' in par:
+    elif kind in ("heading3", "heading4", "heading5", "heading6"):
         # No blank line after heading3-6
         if next_blank:
-            xml_txt += "<p />\n"
+            xml_new_body.append(p_blank)
             next_blank = False
         add_blank = False
     else:
         if next_blank:
-            xml_txt += "<p />\n"
+            xml_new_body.append(p_blank)
             next_blank = False
         add_blank = True
 
-    if use_regex:
-        xml_txt += regex_parse_par(p)
-    else:
-        xml_txt += par
+    # Stripping double blanks and optional RegEx replace:
+    err_msg = regex_parse_par(p)
+    if err_msg:
+        xml_new_body.append(err_msg)
 
-xml_txt = xml_txt + '</string>\n'
+    # Building xml_new_body, by adding a paragraph for each iteration,
+    # except when "continue" is used above:
+    xml_new_body.append(p)
+#end_for p in xml_body.iterfind("p")
 
-# Clean double spaces:
-xml_txt = re.sub(r" +", r" ", xml_txt)
-
-# write_file("debug_body.xml", xml_txt)
-
-xml_body.clear()
-xml_body.set("xml:space", "preserve")
-for p in ET.XML(xml_txt).iterfind("p"):
-    xml_body.append(p)
+xml_doc.getroot().remove(xml_body)
+xml_doc.getroot().insert(1, xml_new_body)
 
 xml_doc.write("debug.xml")
 
