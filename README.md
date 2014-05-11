@@ -22,4 +22,4 @@ Then drag sheet as above.
 
 Attributes (in link, image, and video) and Attachments are left untouched
 
-See: [Python 3.3 RegEx](https://docs.python.org/3.3/howto/regex.html)
+For info on RegEx patterns, see: [Python 3.3 RegEx](https://docs.python.org/3.3/howto/regex.html)
