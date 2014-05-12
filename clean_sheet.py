@@ -90,7 +90,6 @@ def regex_parse_par(p):
         msg = '<p><tags><tag kind="comment">%% </tag></tags>Error in RegEx: '\
               + '<element kind="code" startTag="`">"' + re_from + '", "' + re_to + '" : ' + str(e)\
               + '</element></p>\n'
-        # return msg + ET.tostring(p, "unicode", "xml")
         return ET.XML(msg)
 
 
