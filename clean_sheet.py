@@ -1,7 +1,7 @@
 # python3.3
 # clean_sheet.py
 
-# Version 1.0.1 2014-05-11 at 20:40
+# Version 1.0.1 2014-05-11 at 21:05 EDT
 # Changes: 2014-05-11 More pure xml ET parsing.
 # Finally discovered the element.tail attribute :)
 # Either Clean Blank Lines or RegEx find & repl. Not both in the same run
@@ -154,7 +154,7 @@ for p in xml_body.iterfind("p"):
         if tag is not None:
             kind = tag.get("kind")
 
-        if kind in ("unorderedList", "codeblock", "blockquote", "comment"):
+        if kind in ("orderedList", "unorderedList", "codeblock", "blockquote", "comment"):
             # No blank line after list par and blockquote, except last.
             add_blank = False
             next_blank = True
