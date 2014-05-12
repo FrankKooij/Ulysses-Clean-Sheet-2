@@ -1,9 +1,10 @@
 # python3.3
 # clean_sheet.py
 
-# Version 1.0.0 2014-05-11 at 19:04
+# Version 1.0.1 2014-05-11 at 20:40
 # Changes: 2014-05-11 More pure xml ET parsing.
 # Finally discovered the element.tail attribute :)
+# Either Clean Blank Lines or RegEx find & repl. Not both in the same run
 
 # MIT (c) 2014 RoyRogers56
 
@@ -55,14 +56,16 @@ def replace(elem, text=False, tail=False):
         # elem.text: is element's inner text
         if use_regex:
             elem.text = re.sub(re_from, re_to, elem.text)
-        # Clean double spaces:
-        elem.text = re.sub(r" +", r" ", elem.text)
+        else:
+            # Clean double spaces:
+            elem.text = re.sub(r" +", r" ", elem.text)
     if tail and elem.tail:
         # elem.tail: is text nodes following an element's closing tag.
         if use_regex:
             elem.tail = re.sub(re_from, re_to, elem.tail)
-        # Clean double spaces:
-        elem.tail = re.sub(r" +", r" ", elem.tail)
+        else:
+            # Clean double spaces:
+            elem.tail = re.sub(r" +", r" ", elem.tail)
 
 
 def regex_parse_par(p):
@@ -135,45 +138,47 @@ for p in xml_body.iterfind("p"):
         # then skips these lines if found
         continue
 
-    if add_blank:
-        xml_new_body.append(p_blank)
-        add_blank = False
-
-    if not (p or p.text):
-        # Blank lines
+    if not use_regex:
         if add_blank:
             xml_new_body.append(p_blank)
-        add_blank = False
-        continue
+            add_blank = False
 
-    kind = None
-    tag = p.find(".//tag")
-    if tag is not None:
-        kind = tag.get("kind")
+        if not (p or p.text):
+            # Blank lines
+            if add_blank:
+                xml_new_body.append(p_blank)
+            add_blank = False
+            continue
 
-    if kind in ("unorderedList", "codeblock", "blockquote", "comment"):
-        # No blank line after list par and blockquote, except last.
-        add_blank = False
-        next_blank = True
-    elif kind in ("heading1", "heading2"):
-        # Blank line after heading1-2
-        if next_blank:
-            xml_new_body.append(p_blank)
-            next_blank = False
-        add_blank = True
-    elif kind in ("heading3", "heading4", "heading5", "heading6"):
-        # No blank line after heading3-6
-        if next_blank:
-            xml_new_body.append(p_blank)
-            next_blank = False
-        add_blank = False
-    else:
-        if next_blank:
-            xml_new_body.append(p_blank)
-            next_blank = False
-        add_blank = True
+        kind = None
+        tag = p.find(".//tag")
+        if tag is not None:
+            kind = tag.get("kind")
 
-    # Stripping double blanks and optional RegEx replace:
+        if kind in ("unorderedList", "codeblock", "blockquote", "comment"):
+            # No blank line after list par and blockquote, except last.
+            add_blank = False
+            next_blank = True
+        elif kind in ("heading1", "heading2"):
+            # Blank line after heading1-2
+            if next_blank:
+                xml_new_body.append(p_blank)
+                next_blank = False
+            add_blank = True
+        elif kind in ("heading3", "heading4", "heading5", "heading6"):
+            # No blank line after heading3-6
+            if next_blank:
+                xml_new_body.append(p_blank)
+                next_blank = False
+            add_blank = False
+        else:
+            if next_blank:
+                xml_new_body.append(p_blank)
+                next_blank = False
+            add_blank = True
+    #end_if not use_regex
+
+    # Stripping double blanks or RegEx replace:
     err_msg = regex_parse_par(p)
     if err_msg:
         xml_new_body.append(err_msg)
