@@ -131,7 +131,6 @@ p_num = 0
 
 xml_body = xml_doc.find("string")
 for p in xml_body.iterfind("p"):
-    # par = ET.tostring(p, "unicode", "xml")
     p_num += 1
     if p_num <= 2 and check_for_regex(p):
         # Reads first two lines and chack for regex find: and repl:
@@ -151,7 +150,7 @@ for p in xml_body.iterfind("p"):
             continue
 
         kind = None
-        tag = p.find(".//tag")
+        tag = p.find("tags/tag")
         if tag is not None:
             kind = tag.get("kind")
 
