@@ -22,4 +22,9 @@ Then drag sheet as above.
 
 Attributes (in link, image, and video) and Attachments are left untouched
 
+#### Example:
+_Change to US date format (2014-05-09 -> 05/09/2014):_  
+'' find:(\d{4})-(\d{2})-(\d{2})   
+'' repl:\2/\3/\1 
+
 For info on RegEx patterns, see: [Python 3.3 RegEx](https://docs.python.org/3.3/howto/regex.html)
